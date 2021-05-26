@@ -150,7 +150,7 @@ export default {
       isSell: false,
       user: this.$getSessionStorage("user"),
       goodsId: this.$getSessionStorage("goodsId"),
-      userId: this.$getSessionStorage("user").userId,
+      userId: "",
       sellerId: "",
       goodsDetail: {},
       goodsImage:
@@ -232,39 +232,37 @@ export default {
   created() {
     this.init();
   },
-  updated() {
-    // this.init();
-    // this.user = this.$getSessionStorage("user");
-  },
   methods: {
     init() {
-      if (this.user == null) {
-        this.isFavo = false;
-        this.isAttent = false;
-      } else {
-        //获取商品详情
-        this.$axios
-          .post(
-            "secondhandWeb/goods/getDetailById/" + this.goodsId,
-            this.$qs.stringify({ goodsId: this.goodsId })
-          )
-          .then(res => {
-            this.goodsDetail = res.data;
-            this.sellerId = this.goodsDetail.sellerId;
-            this.$setSessionStorage("goodsDetail", res.data);
-            this.goodsFavo = this.goodsDetail.goodsFavorite;
+      //获取商品详情
+      this.$axios
+        .post(
+          "secondhandWeb/goods/getDetailById/" + this.goodsId,
+          this.$qs.stringify({ goodsId: this.goodsId })
+        )
+        .then(res => {
+          this.goodsDetail = res.data;
+          console.log(this.goodsDetail);
+          this.sellerId = this.goodsDetail.sellerId;
+          this.$setSessionStorage("goodsDetail", res.data);
+          this.goodsFavo = this.goodsDetail.goodsFavorite;
+          if (this.user == null || this.user == "null") {
+            this.isFavo = false;
+            this.isAttent = false;
+          } else {
+            this.userId=this.$getSessionStorage("user").userId;
             if (this.userId == this.sellerId) this.showAttent = false;
             if (this.goodsDetail.isSell == true) this.isSell = true;
             //判断是否加入收藏
             this.judgFavo();
             //判断是否关注
             this.judgAttent();
-          })
-          .catch(e => {
-            this.$message.error("服务器内部发生异常");
-            console.log(e);
-          });
-      }
+          }
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
     },
     judgFavo() {
       this.$axios

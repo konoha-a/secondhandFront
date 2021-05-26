@@ -199,7 +199,7 @@ export default {
     getUserInfo(ortherId) {
       this.$axios
         .post(
-          "secondhandWeb/user/getUserInfo/" + ortherId,
+          "secondhandWeb/user/getUserInfo",
           this.$qs.stringify({ ortherId })
         )
         .then(res => {

@@ -44,6 +44,15 @@
           <el-button v-if="item.orderState==4" @click="deleteOrder(item.orderId)" round>删除订单</el-button>
         </div>
       </el-row>
+
+      <!-- 分页 -->
+      <el-pagination
+        @current-change="changePage"
+        :page-size="pageSize"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin-top:20px;padding-bottom: 50px;left:37%"
+      ></el-pagination>
     </div>
 
     <!-- 没有订单 -->
@@ -142,6 +151,9 @@ export default {
       showEditOrder:false,
       showDeliver:false,
       active:1,
+      pageNo: 1,
+      pageSize: 5,
+      total: 0
     };
   },
   created() {
@@ -153,11 +165,13 @@ export default {
         .post(
           "/secondhandWeb/orders/getSellList",
           this.$qs.stringify({
-            sellerId: this.userId
+            sellerId: this.userId,
+            pageNo:this.pageNo,
+            pageSize:this.pageSize
           })
         )
         .then(res => {
-          if (res.data == undefined || res.data.length <= 0) this.isZero = true;
+          if (res.data == null || res.data.length <= 0) this.isZero = true;
           else {
             this.isZero = false;
             this.sellList = res.data;
@@ -166,6 +180,23 @@ export default {
         .catch(e => {
           console.log(e);
         });
+
+        this.$axios
+        .post(
+          "secondhandWeb/orders/getSellCount",
+          this.$qs.stringify({ sellerId: this.userId })
+        )
+        .then(res => {
+          this.total = res.data;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.init(); //根据新的页码选取分页数据
     },
     toGoodsDetail(goodsId) {
       this.$setSessionStorage("goodsId", goodsId);

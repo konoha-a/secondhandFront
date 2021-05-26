@@ -11,7 +11,11 @@
           <el-option label="用户" value="2"></el-option>
           <el-option label="学校" value="3"></el-option>
         </el-select>
-        <el-button slot="append" icon="el-icon-search" @click="searchSubmit(modelSelect,searchText)"></el-button>
+        <el-button
+          slot="append"
+          icon="el-icon-search"
+          @click="searchSubmit(modelSelect,searchText)"
+        ></el-button>
       </el-input>
     </div>
 
@@ -83,7 +87,7 @@
     <!-- 主体 -->
     <div class="indexBody">
       <el-row :gutter="60">
-        <el-col :span="6" v-for="(item, index) in goodsData" :key="index">
+        <el-col :span="6" v-for="(item, index) in goodsList" :key="index">
           <div class="cardBox">
             <el-card :body-style="{ padding: '10px' }" shadow="hover">
               <div @click="toGoodsDetail(item.goodsId)">
@@ -103,14 +107,15 @@
         </el-col>
       </el-row>
     </div>
-     <el-pagination
+
+    <!-- 分页 -->
+    <el-pagination
       @current-change="changePage"
       :page-size="pageSize"
       layout="prev, pager, next, jumper"
       :total="total"
-      style="margin-bottom:100px; margin-top:20px">
-    </el-pagination>
-    
+      style="margin-bottom:100px; margin-top:20px"
+    ></el-pagination>
   </div>
 </template>
 
@@ -127,35 +132,31 @@ export default {
       activeIndex2: "1",
       modelSelect: "1",
       pageNo: 1,
-      pageSize:20,
-      total:0,
-      goodsData: [],
+      pageSize: 20,
+      total: 0,
+      goodsList: [],
       goodsId: ""
     };
   },
   created() {
-    this.init();
+    this.init();    
   },
   methods: {
-    userLogin() {
-      this.$router.push({ path: "/userLogin" });
-    },
     init() {
       this.$axios
         .post(
           "secondhandWeb/goods/getGoodsList",
-          this.$qs.stringify({ pageNo: this.pageNo,pageSize:this.pageSize })
+          this.$qs.stringify({ pageNo: this.pageNo, pageSize: this.pageSize })
         )
         .then(res => {
-          this.goodsData = res.data;
-          // console.log(this.goodsData);
+          this.goodsList = res.data;          
         })
         .catch(e => {
           this.$message.error("服务器内部发生异常");
           console.log(e);
         });
 
-        this.$axios
+      this.$axios
         .get("secondhandWeb/goods/getGoodsCount", this.$qs.stringify())
         .then(res => {
           this.total = res.data;
@@ -170,28 +171,16 @@ export default {
       this.init(); //根据新的页码选取分页数据
     },
     toGoodsDetail(goodsId) {
-      this.$setSessionStorage("goodsId",goodsId);
+      this.$setSessionStorage("goodsId", goodsId);
       this.$router.push("/goodsDetail");
     },
     toGoodsClass(index) {
-      this.$axios
-        .post(
-          "secondhandWeb/goods/getGoodsListByClass",
-          this.$qs.stringify({ index })
-        )
-        .then(res => {
-          this.$setSessionStorage("goodsClass", res.data);
-          this.$setSessionStorage("classTitle", index);
-          this.$router.push("/goodsClass");
-        })
-        .catch(e => {
-          this.$message.error("服务器内部发生异常");
-          console.log(e);
-        });
+      this.$setSessionStorage("classTitle", index);
+      this.$router.push("/goodsClass");
     },
-    searchSubmit(modelSelect,searchText){
-      this.$setSessionStorage("modelSelect",modelSelect);
-      this.$setSessionStorage("searchText",searchText);
+    searchSubmit(modelSelect, searchText) {
+      this.$setSessionStorage("modelSelect", modelSelect);
+      this.$setSessionStorage("searchText", searchText);
       this.$router.push("search");
     }
   },

@@ -53,7 +53,6 @@
           </div>
         </el-row>
       </div>
-
     </div>
   </div>
 </template>
@@ -67,10 +66,11 @@ export default {
       searchList: [],
       searchText: this.$getSessionStorage("searchText"),
       modelSelect: this.$getSessionStorage("modelSelect"),
-      isZero: false
+      isZero: false,
     };
   },
   created() {
+    console.log(this.searchText)
     this.init();
   },
   methods: {

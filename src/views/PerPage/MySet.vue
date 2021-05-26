@@ -12,7 +12,7 @@
     >
       <div class="mySetBox">
         <el-form-item class="userImage" label="当前头像：" prop="userImage">
-          <el-image v-if="!isManage" :src="infoForm.userImage" class="image"></el-image>
+          <img v-if="!isManage" :src="user.userImage" class="image" />
           <el-upload
             v-else
             class="avatar-uploader"
@@ -24,28 +24,28 @@
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
-        <el-form-item @blur="checkUserName" label="用户名：" prop="userName">
-          <span v-if="!isManage">{{infoForm.userName}}</span>
+        <el-form-item label="用户名：" prop="userName">
+          <span v-if="!isManage">{{user.userName}}</span>
           <el-input v-model="infoForm.userName" v-else></el-input>
         </el-form-item>
-        <el-form-item @blur="checkUserPhone" label="手机号：" prop="userPhone">
-          <span v-if="!isManage">{{infoForm.userPhone}}</span>
+        <el-form-item label="手机号：" prop="userPhone">
+          <span v-if="!isManage">{{user.userPhone}}</span>
           <el-input v-model="infoForm.userPhone" v-else></el-input>
         </el-form-item>
         <el-form-item label="邮箱：" prop="userEmail">
-          <span v-if="!isManage">{{infoForm.userEmail}}</span>
+          <span v-if="!isManage">{{user.userEmail}}</span>
           <el-input v-model="infoForm.userEmail" v-else></el-input>
         </el-form-item>
         <el-form-item label="所在院校：" prop="userSchool">
-          <span v-if="!isManage">{{infoForm.userSchool}}</span>
+          <span v-if="!isManage">{{user.userSchool}}</span>
           <el-input v-model="infoForm.userSchool" v-else></el-input>
         </el-form-item>
       </div>
     </el-form>
-    <el-button class="suButton" type="primary" size="small" @click="editSubmit" v-if="!isManage">修改</el-button>
+    <el-button class="suButton" type="primary" size="small" @click="editItem" v-if="!isManage">修改</el-button>
     <div v-else>
-      <el-button class="suButton" type="success" size="small" @click="editSubmit">完成</el-button>
-      <el-button class="suButton" type="info" size="small" @click="ccEdit">取消</el-button>
+      <el-button class="suButton" type="success" size="small" @click="checkUserName">完成</el-button>
+      <el-button class="suButton" type="info" size="small" @click="editCancel">取消</el-button>
     </div>
   </div>
 </template>
@@ -58,9 +58,12 @@ export default {
   data() {
     return {
       isManage: false,
+      existName: false,
+      user: {},
+      userId: this.$getSessionStorage("user").userId,
       infoForm: {
-        userId: "",
-        userImage:"https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
+        userImage:
+          "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
         userName: "",
         userSchool: "",
         userPhone: "",
@@ -85,21 +88,15 @@ export default {
   },
   methods: {
     init() {
-      this.userId = this.$getSessionStorage("user").userId;
       this.$axios
         .post(
-          "/secondhandWeb/user/updateUser",
+          "/secondhandWeb/user/getUserInfo",
           this.$qs.stringify({
             userId: this.userId
           })
         )
         .then(res => {
-          this.$setSessionStorage("user", res.data);
-          this.userImage = this.$getSessionStorage("user").userImage;
-          this.userName = this.$getSessionStorage("user").userName;
-          this.userSchool = this.$getSessionStorage("user").userSchool;
-          this.userPhone = this.$getSessionStorage("user").userPhone;
-          this.userEmail = this.$getSessionStorage("user").userEmail;
+          this.user = res.data;
         })
         .catch(e => {
           console.log(e);
@@ -109,12 +106,18 @@ export default {
       // 判断是否存在相同的用户名
       this.$axios
         .post(
-          "/secondhandWeb/user/isExistUserName",
-          this.$qs.stringify({ userName: this.infoForm.userName })
+          "/secondhandWeb/user/checkUserName",
+          this.$qs.stringify({
+            userId: this.userId,
+            userName: this.infoForm.userName
+          })
         )
         .then(res => {
-          if (res.data == 1) {
+          console.log(res.data);
+          if (res.data > 0) {
             this.$message.error("用户名已存在");
+          } else {
+            this.checkUserPhone();
           }
         })
         .catch(e => {
@@ -126,12 +129,17 @@ export default {
       // 判断是否存在相同的手机号
       this.$axios
         .post(
-          "/secondhandWeb/user/isExistUserPhone",
-          this.$qs.stringify({ userPhone: this.infoForm.userPhone })
+          "/secondhandWeb/user/checkUserPhone",
+          this.$qs.stringify({
+            userId: this.userId,
+            userPhone: this.infoForm.userPhone
+          })
         )
         .then(res => {
           if (res.data == 1) {
             this.$message.error("该手机号已被注册");
+          }else{
+            this.submitItem();
           }
         })
         .catch(e => {
@@ -139,48 +147,52 @@ export default {
           console.log(e);
         });
     },
-    editSubmit() {
-      if (this.isManage == false) this.isManage = true;
-      else {
-        if (this.infoForm.userName == "") {
-          this.$message.error("用户名不能为空");
-          return;
-        }
-        if (this.infoForm.userPhone == "") {
-          this.$message.error("手机号不能为空");
-          return;
-        }
-        if (this.infoForm.userSchool == "") {
-          this.$message.error("所在院校不能为空");
-          return;
-        }
-
-        this.userId = this.$getSessionStorage("user").userId;
-        this.$refs.infoForm.validate(valid => {
-          if (valid) {
-            this.$axios
-              .post(
-                "/secondhandWeb/user/editUser",
-                this.$qs.stringify(this.infoForm)
-              )
-              .then(res => {
-                if (res.data > 0) {
-                  this.$message.success("操作成功");
-                  this.init();
-                } else {
-                  this.$message.error("操作失败");
-                }
-              })
-              .catch(() => {});
-          } else {
-            this.$message.warning("请按照提示正确填写内容！");
-            return false;
-          }
-        });
-        this.isManage = false;
-      }
+    editItem() {
+      this.isManage = true;
+      this.infoForm.userImage = this.user.userImage;
+      this.infoForm.userName = this.user.userName;
+      this.infoForm.userPhone = this.user.userPhone;
+      this.infoForm.userEmail = this.user.userEmail;
+      this.infoForm.userSchool = this.user.userSchool;
     },
-    ccEdit() {
+    submitItem() {
+      if (this.infoForm.userName == "") {
+        this.$message.error("用户名不能为空");
+        return;
+      }
+      if (this.infoForm.userPhone == "") {
+        this.$message.error("手机号不能为空");
+        return;
+      }
+      if (this.infoForm.userSchool == "") {
+        this.$message.error("所在院校不能为空");
+        return;
+      }
+
+      this.$refs.infoForm.validate(valid => {
+        if (valid) {
+          this.$axios
+            .post(
+              "/secondhandWeb/user/editUser",
+              this.$qs.stringify(this.infoForm)
+            )
+            .then(res => {
+              if (res.data > 0) {
+                this.$message.success("操作成功");
+                this.init();
+              } else {
+                this.$message.error("操作失败");
+              }
+            })
+            .catch(() => {});
+        } else {
+          this.$message.warning("请按照提示正确填写内容！");
+          return false;
+        }
+      });
+      this.isManage = false;
+    },
+    editCancel() {
       this.isManage = false;
       this.infoForm = this.$getSessionStorage("user");
     },
@@ -190,7 +202,7 @@ export default {
       reader.readAsDataURL(file.raw);
       reader.onload = function() {
         this.result; //base64编码
-        This.infoForm.userImage=this.result;
+        This.infoForm.userImage = this.result;
         This.imageUrl = this.result;
       };
     },

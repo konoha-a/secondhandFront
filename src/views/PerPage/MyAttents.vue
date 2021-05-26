@@ -22,6 +22,15 @@
           <span>粉丝：{{item.fansCount}}</span>
         </div>
       </el-row>
+
+      <!-- 分页 -->
+      <el-pagination
+        @current-change="changePage"
+        :page-size="pageSize"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin-top:20px;padding-bottom: 50px;left:37%"
+      ></el-pagination>
     </div>
     <div v-show="isZero" class="zero">
       <span>您还没有关注任何人哦~ 多浏览一些商品吧！</span>
@@ -36,26 +45,48 @@ export default {
   data() {
     return {
       attentData: [],
-      userId: "",
+      user:{},
+      userId: this.$getSessionStorage("user").userId,
       beAttentId: "",
-      isZero: false
+      isZero: false,
+      pageNo: 1,
+      pageSize: 8,
+      total: 0
     };
   },
   created() {
+    console.log(this.userId)
+    this.updateUser();
     this.init();
   },
   methods: {
+    updateUser(){
+      this.$axios
+        .post(
+          "secondhandWeb/user/getUserInfo",
+          this.$qs.stringify({ userId: this.userId })
+        )
+        .then(res => {
+          this.user=res.data;
+          this.total=this.user.attentCount;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
     init() {
-      this.userId = this.$getSessionStorage("user").userId;
       this.$axios
         .post(
           "/secondhandWeb/attention/getBeAttentList",
           this.$qs.stringify({
-            userId: this.userId
+            userId: this.userId,
+            pageNo:this.pageNo,
+            pageSize:this.pageSize
           })
         )
         .then(res => {
-          if (res.data == undefined || res.data.length <= 0) this.isZero = true;
+          if (res.data == null || res.data.length <= 0) this.isZero = true;
           else {
             this.isZero = false;
             this.attentData = res.data;
@@ -64,6 +95,10 @@ export default {
         .catch(e => {
           console.log(e);
         });
+    },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.init(); //根据新的页码选取分页数据
     },
     toUserDetail(beAttentId) {
       this.$setSessionStorage("anUserId", beAttentId);

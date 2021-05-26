@@ -6,7 +6,7 @@
 
     <div v-show="!isZero" class="indexBody">
       <el-row :gutter="50">
-        <el-col :span="6" v-for="(item, index) in FGoodsData" :key="index">
+        <!-- <el-col :span="6" v-for="(item, index) in FGoodsData" :key="index">
           <div class="cardFBox">
             <el-card :body-style="{ padding: '10px' }" shadow="hover">
               <div @click="toGoodsDetail(item.goodsId)">                
@@ -24,7 +24,7 @@
             </el-card>
           </div>
         </el-col>
-        <el-col :span="6" v-for="(item, index) in TGoodsData" :key="index">
+         <el-col :span="6" v-for="(item, index) in TGoodsData" :key="index">
           <div class="cardTBox">
             <el-card :body-style="{ padding: '10px' }" shadow="hover">
               <div class="posiab" @click="toGoodsDetail(item.goodsId)">
@@ -42,8 +42,37 @@
               </div>
             </el-card>
           </div>
+        </el-col> -->
+
+        <el-col :span="6" v-for="(item, index) in MyGoodsData" :key="index">
+          <div class="cardFBox">
+            <el-card :body-style="{ padding: '10px' }" shadow="hover">
+              <div @click="toGoodsDetail(item.goodsId)">
+                <img v-show="item.isSell" class="bb" src="@/assets/selled.png" alt />
+                <el-image :src="item.goodsImage" class="goodsImage"></el-image>
+                <div class="goodsName">
+                  <span>{{item.goodsName}}</span>
+                </div>
+                <div class="goodsPrice">
+                  <span>￥ {{item.goodsPrice}}</span>
+                </div>
+                <div class="goodsFavo">
+                  <span>{{item.goodsFavorite}}人收藏</span>
+                </div>
+              </div>
+            </el-card>
+          </div>
         </el-col>
       </el-row>
+
+      <!-- 分页 -->
+      <el-pagination
+        @current-change="changePage"
+        :page-size="pageSize"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="padding-bottom: 50px;left:37%"
+      ></el-pagination>
     </div>
     <div v-show="isZero" class="zero">
       <span style="font-size:18px">您还没有发布任何商品~</span>
@@ -58,58 +87,64 @@ export default {
   data() {
     return {
       isZero: false,
-      userId: "",
-      FGoodsData: [],
-      TGoodsData: []
+      user:{},
+      userId: this.$getSessionStorage("user").userId,
+      FGoodsData:[],
+      TGoodsData:[],
+      MyGoodsData: [],
+      pageNo: 1,
+      pageSize: 8,
+      total: 0
     };
   },
   created() {
+    this.updateUser();
     this.init();
-    setTimeout(this.judgment,500);
   },
   methods: {
+    updateUser(){
+      this.$axios
+        .post(
+          "secondhandWeb/user/getUserInfo",
+          this.$qs.stringify({ userId: this.userId })
+        )
+        .then(res => {
+          this.user=res.data;
+          this.total=this.user.publishCount;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
     init() {
-      this.userId = this.$getSessionStorage("user").userId;
       this.$axios
         .post(
-          "/secondhandWeb/goods/getFGoodsList",
+          "/secondhandWeb/goods/getMyGoodsList",
           this.$qs.stringify({
-            sellerId: this.userId
+            userId: this.userId,
+            pageNo: this.pageNo,
+            pageSize: this.pageSize
           })
         )
         .then(res => {
-          this.FGoodsData = res.data;
-        })
-        .catch(e => {
-          console.log(e);
-        });
-
-      this.$axios
-        .post(
-          "/secondhandWeb/goods/getTGoodsList",
-          this.$qs.stringify({
-            sellerId: this.userId
-          })
-        )
-        .then(res => {
-          this.TGoodsData = res.data;
+          this.MyGoodsData = res.data;
+          if (this.MyGoodsData == null || this.MyGoodsData.length <= 0)
+            this.isZero = true;
+          else this.isZero = false;
         })
         .catch(e => {
           console.log(e);
         });
     },
-    judgment() {
-      if (
-        (this.FGoodsData == null || this.FGoodsData.length <= 0) &&
-        (this.TGoodsData == null || this.TGoodsData.length <= 0)
-      )
-        this.isZero = true;
-      else this.isZero = false;
-    },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.init(); //根据新的页码选取分页数据
+    },    
     toGoodsDetail(goodsId) {
       this.$setSessionStorage("goodsId", goodsId);
       this.$router.push("/goodsDetail");
-    },
+    }
   },
   components: {}
 };

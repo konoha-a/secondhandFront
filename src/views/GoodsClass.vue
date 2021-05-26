@@ -9,7 +9,7 @@
     </div>
     <div class="indexBody">
       <el-row :gutter="60">
-        <el-col :span="6" v-for="(item, index) in goodsData" :key="index">
+        <el-col :span="6" v-for="(item, index) in goodsList" :key="index">
           <div class="cardBox">
             <el-card :body-style="{ padding: '10px' }" shadow="hover">
               <div @click="toGoodsDetail(item.goodsId)">
@@ -45,34 +45,53 @@ export default {
   name: "GoodsClass",
   data() {
     return {
-      goodsData: [],
+      goodsList: [],
       classTitle: "",
       pageNo: 1,
       pageSize: 20,
       total: 0,
-      searchText:"",
+      searchText: "",
+      index: this.$getSessionStorage("classTitle")
     };
   },
   created() {
-    this.goodsData = this.$getSessionStorage("goodsClass");
     this.className();
     this.init();
   },
-  mounted() {},
   methods: {
     init() {
       this.$axios
         .post(
-          "/secondhandWeb/goods/getClassCount",
-          this.$qs.stringify({ index: this.$getSessionStorage("classTitle") })
+          "secondhandWeb/goods/getGoodsListByClass",
+          this.$qs.stringify({
+            index: this.index,
+            pageNo: this.pageNo,
+            pageSize: this.pageSize
+          })
+        )
+        .then(res => {
+          this.goodsList = res.data;
+          console.log(this.goodsList)
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+
+      this.$axios
+        .post(
+          "secondhandWeb/goods/getClassCount",
+          this.$qs.stringify({
+            index: this.index
+          })
         )
         .then(res => {
           this.total = res.data;
+          console.log(this.total)
         })
-        //异常
-        .catch(error => {
+        .catch(e => {
           this.$message.error("服务器内部发生异常");
-          console.log(error);
+          console.log(e);
         });
     },
     changePage(val) {
@@ -84,31 +103,27 @@ export default {
       this.$router.push("/goodsDetail");
     },
     className() {
-      if (this.$getSessionStorage("classTitle") == 1) this.classTitle = "书籍";
-      if (this.$getSessionStorage("classTitle") == 2)
-        this.classTitle = "学习用品";
-      if (this.$getSessionStorage("classTitle") == 3) this.classTitle = "食品";
-      if (this.$getSessionStorage("classTitle") == 4)
-        this.classTitle = "电子产品";
-      if (this.$getSessionStorage("classTitle") == 5)
-        this.classTitle = "体育用品";
-      if (this.$getSessionStorage("classTitle") == 6)
-        this.classTitle = "生活用品";
+      if (this.index == 1) this.classTitle = "书籍";
+      if (this.index == 2) this.classTitle = "学习用品";
+      if (this.index == 3) this.classTitle = "食品";
+      if (this.index == 4) this.classTitle = "电子产品";
+      if (this.index == 5) this.classTitle = "体育用品";
+      if (this.index == 6) this.classTitle = "生活用品";
     },
-    searchSubmit(searchText){
-      this.$axios
-        .post(
-          "/secondhandWeb/goods/getClassCount",
-          this.$qs.stringify(this.goodsData)
-        )
-        .then(res => {
-          this.total = res.data;
-        })
-        //异常
-        .catch(error => {
-          this.$message.error("服务器内部发生异常");
-          console.log(error);
-        });
+    searchSubmit(searchText) {
+      // this.$axios
+      //   .post(
+      //     "/secondhandWeb/goods/getClassCount",
+      //     this.$qs.stringify(this.goodsList)
+      //   )
+      //   .then(res => {
+      //     this.total = res.data;
+      //   })
+      //   //异常
+      //   .catch(error => {
+      //     this.$message.error("服务器内部发生异常");
+      //     console.log(error);
+      //   });
     }
   },
   components: {

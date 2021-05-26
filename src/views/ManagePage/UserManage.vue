@@ -23,7 +23,7 @@
       </el-table-column>
       <el-table-column prop="userSex" label="用户性别" width="150px" align="center">
         <template slot-scope="scope">
-          <span v-if="scope.row.userSex==1">男</span>
+          <span v-if="scope.row.userSex==0">男</span>
           <span v-else>女</span>
         </template>
       </el-table-column>

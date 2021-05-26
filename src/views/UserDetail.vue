@@ -19,6 +19,16 @@
         <div class="fansCount">
           <span>粉丝：{{anUserData.fansCount}}</span>
         </div>
+        <!-- <button
+            v-if="!isAttent"
+            class="addAttent"
+            @click="addAttent(sellerId)"
+          >+关注</button>
+          <button
+            v-else
+            class="cancelAttent"
+            @click="cancelAttent(sellerId)"
+          >已关注</button> -->
       </el-row>
       <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
         <el-menu-item index="1">TA的商品</el-menu-item>
@@ -27,7 +37,7 @@
 
       <div v-show="!isZero" class="indexBody">
         <el-row :gutter="95">
-          <el-col :span="6" v-for="(item, index) in FGoodsData" :key="index">
+          <!-- <el-col :span="6" v-for="(item, index) in FGoodsData" :key="index">
             <div class="cardFBox">
               <el-card :body-style="{ padding: '10px' }" shadow="hover">
                 <div @click="toGoodsDetail(item.goodsId)">
@@ -63,8 +73,37 @@
                 </div>
               </el-card>
             </div>
+          </el-col>-->
+
+          <el-col :span="6" v-for="(item, index) in MyGoodsData" :key="index">
+            <div class="cardTBox">
+              <el-card :body-style="{ padding: '10px' }" shadow="hover">
+                <div class="posiab" @click="toGoodsDetail(item.goodsId)">
+                  <img v-show="item.isSell" class="bb" src="@/assets/selled.png" alt />
+                  <el-image :src="item.goodsImage" class="goodsImage"></el-image>
+                  <div class="goodsName">
+                    <span>{{item.goodsName}}</span>
+                  </div>
+                  <div class="goodsPrice">
+                    <span>￥ {{item.goodsPrice}}</span>
+                  </div>
+                  <div class="goodsFavo">
+                    <span>{{item.goodsFavorite}}人收藏</span>
+                  </div>
+                </div>
+              </el-card>
+            </div>
           </el-col>
         </el-row>
+
+        <!-- 分页 -->
+        <el-pagination
+          @current-change="changePage"
+          :page-size="pageSize"
+          layout="prev, pager, next, jumper"
+          :total="total"
+          style="padding-bottom: 50px;left:37%"
+        ></el-pagination>
       </div>
 
       <div v-show="isZero" class="zero">
@@ -83,21 +122,22 @@ export default {
       anUserData: {},
       activeIndex: 1,
       anUserId: this.$getSessionStorage("anUserId"),
-      isZero: false,
-      FGoodsData: [],
-      TGoodsData: []
+      isZero: false,      
+      MyGoodsData: [],
+      pageNo: 1,
+      pageSize: 16,
+      total: 0
     };
   },
   mounted() {},
   created() {
     this.init();
-    this.getGoodsList();
   },
   methods: {
     init() {
       this.$axios
         .post(
-          "/secondhandWeb/user/getUserInfo/" + this.anUserId,
+          "/secondhandWeb/user/getUserInfo",
           this.$qs.stringify({ userId: this.anUserId })
         )
         .then(res => {
@@ -106,18 +146,21 @@ export default {
         .catch(e => {
           console.log(e);
         });
-    },
-    getGoodsList() {
-      this.$axios
+        
+        this.$axios
         .post(
-          "/secondhandWeb/goods/getFGoodsList",
+          "/secondhandWeb/goods/getMyGoodsList",
           this.$qs.stringify({
-            sellerId: this.anUserId
+            userId: this.anUserId,
+            pageNo:this.pageNo,
+            pageSize:this.pageSize
           })
         )
         .then(res => {
-          this.FGoodsData = res.data;
-          console.log(this.FGoodsData);
+          this.MyGoodsData = res.data;
+          if (this.MyGoodsData == null || this.MyGoodsData.length <= 0)
+            this.isZero = true;
+          else this.isZero = false;
         })
         .catch(e => {
           console.log(e);
@@ -125,27 +168,20 @@ export default {
 
       this.$axios
         .post(
-          "/secondhandWeb/goods/getTGoodsList",
-          this.$qs.stringify({
-            sellerId: this.anUserId
-          })
+          "secondhandWeb/goods/getMyGoodsCount",
+          this.$qs.stringify({ userId: this.anUserId })
         )
         .then(res => {
-          this.TGoodsData = res.data;
-          console.log(this.TGoodsData);
+          this.total = res.data;
         })
         .catch(e => {
+          this.$message.error("服务器内部发生异常");
           console.log(e);
         });
-      setTimeout(this.judgment, 500);
     },
-    judgment() {
-      if (
-        (this.FGoodsData == null || this.FGoodsData.length <= 0) &&
-        (this.TGoodsData == null || this.TGoodsData.length <= 0)
-      )
-        this.isZero = true;
-      else this.isZero = false;
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.init(); //根据新的页码选取分页数据
     },
     toGoodsDetail(goodsId) {
       this.$setSessionStorage("goodsId", goodsId);

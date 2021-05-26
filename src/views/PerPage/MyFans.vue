@@ -23,6 +23,15 @@
           <span>粉丝：{{item.fansCount}}</span>
         </div>
       </el-row>
+
+      <!-- 分页 -->
+      <el-pagination
+        @current-change="changePage"
+        :page-size="pageSize"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin-top:20px;padding-bottom: 50px;left:37%"
+      ></el-pagination>
     </div>
     <div v-show="isZero" class="zero">
       <span>目前没有人关注您哦~ 多发布一些商品吧！</span>
@@ -37,25 +46,46 @@ export default {
   data() {
     return {
       fansData: [],
-      userId: "",
-      isZero: false
+      user:{},
+      userId: this.$getSessionStorage("user").userId,
+      isZero: false,
+      pageNo: 1,
+      pageSize: 8,
+      total: 0
     };
   },
   created() {
+    this.updateUser();
     this.init();
   },
   methods: {
+    updateUser(){
+      this.$axios
+        .post(
+          "secondhandWeb/user/getUserInfo",
+          this.$qs.stringify({ userId: this.userId })
+        )
+        .then(res => {
+          this.user=res.data;
+          this.total=this.user.fansCount;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
     init() {
-      this.userId = this.$getSessionStorage("user").userId;
       this.$axios
         .post(
           "/secondhandWeb/attention/getFansList",
           this.$qs.stringify({
-            userId: this.userId
+            userId: this.userId,
+            pageNo:this.pageNo,
+            pageSize:this.pageSize
           })
         )
         .then(res => {
-          if (res.data == undefined || res.data.length <= 0) this.isZero = true;
+          if (res.data == null || res.data.length <= 0) this.isZero = true;
           else{
             this.isZero=false;
             this.fansData = res.data;
@@ -64,6 +94,10 @@ export default {
         .catch(e => {
           console.log(e);
         });
+    },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.init(); //根据新的页码选取分页数据
     },
     toUserDetail(userId) {
       this.$setSessionStorage("anUserId", userId);

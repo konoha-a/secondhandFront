@@ -67,6 +67,15 @@
           <el-button v-if="item.orderState==4" @click="deleteOrder(item.orderId)" round>删除订单</el-button>
         </div>
       </el-row>
+
+      <!-- 分页 -->
+      <el-pagination
+        @current-change="changePage"
+        :page-size="pageSize"
+        layout="prev, pager, next, jumper"
+        :total="total"
+        style="margin-top:20px;padding-bottom: 50px;left:37%"
+      ></el-pagination>
     </div>
 
     <!-- 没有订单 -->
@@ -85,13 +94,18 @@
       <span class="orderTitle"></span>
       <span class="orderTitle">价格</span>
       <span class="orderTitle">运费</span>
-      <span>总计</span><br>
+      <span>总计</span>
+      <br />
       <hr style="background-color:rgb(200, 200, 200);border:none;height:1px" size="1px" />
-      <el-image :src="orderData.goodsImage" style="width:70px;height:70px;position:absolute;left:10%"></el-image>
+      <el-image
+        :src="orderData.goodsImage"
+        style="width:70px;height:70px;position:absolute;left:10%"
+      ></el-image>
       <span class="orderData" style="left:25%">{{orderData.goodsName}}</span>
       <span class="orderData" style="left:49%">{{orderData.goodsPrice}}</span>
       <span class="orderData" style="left:69%">{{orderData.goodsCar}}</span>
-      <span class="orderData" style="left:87%">{{orderData.orderPrice}}</span><br>
+      <span class="orderData" style="left:87%">{{orderData.orderPrice}}</span>
+      <br />
       <div style="margin-bottom:60px;"></div>
       <hr style="background-color:rgb(200, 200, 200);border:none;height:1px" size="1px" />
       <el-button @click="payCancel">取 消</el-button>
@@ -106,7 +120,11 @@
         <el-step title="卖家发货"></el-step>
         <el-step title="确认收货"></el-step>
       </el-steps>
-      <el-image class="goodsImage" @click="toGoodsDetail(buyData.goodsId)" :src="buyData.goodsImage"></el-image>
+      <el-image
+        class="goodsImage"
+        @click="toGoodsDetail(buyData.goodsId)"
+        :src="buyData.goodsImage"
+      ></el-image>
       <span class="goodsName">{{buyData.goodsName}}</span>
       <span style="float: right;margin-right: 10px;margin-top:25px">￥ {{buyData.orderPrice}}</span>
       <span class="goodsIntro" style="margin-left:20px">{{buyData.goodsIntroduct}}</span>
@@ -230,7 +248,10 @@ export default {
         recAdder: [
           { required: true, message: "请输入详细地址", trigger: "blur" }
         ]
-      }
+      },
+      pageNo: 1,
+      pageSize: 5,
+      total: 0
     };
   },
   created() {
@@ -242,11 +263,13 @@ export default {
         .post(
           "/secondhandWeb/orders/getBuyList",
           this.$qs.stringify({
-            buyerId: this.userId
+            buyerId: this.userId,
+            pageNo: this.pageNo,
+            pageSize: this.pageSize
           })
         )
         .then(res => {
-          if (res.data == undefined || res.data.length <= 0) this.isZero = true;
+          if (res.data == null || res.data.length <= 0) this.isZero = true;
           else {
             this.isZero = false;
             this.buyList = res.data;
@@ -255,6 +278,23 @@ export default {
         .catch(e => {
           console.log(e);
         });
+
+      this.$axios
+        .post(
+          "secondhandWeb/orders/getBuyCount",
+          this.$qs.stringify({ buyerId: this.userId })
+        )
+        .then(res => {
+          this.total = res.data;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.init(); //根据新的页码选取分页数据
     },
     toGoodsDetail(goodsId) {
       this.$setSessionStorage("goodsId", goodsId);
@@ -288,7 +328,7 @@ export default {
           this.$qs.stringify({ orderId })
         )
         .then(res => {
-          this.orderData=res.data;
+          this.orderData = res.data;
         })
         .catch(e => {
           this.$message.error("服务器内部发生异常");
@@ -308,24 +348,27 @@ export default {
           } else {
             // this.$message.error("");
             alert("商品已被他人购买！点击确认取消该订单");
-            this.showPay=false;
+            this.showPay = false;
             //取消订单
             this.$axios
-            .post(
-              "/secondhandWeb/orders/cancelOrder",
-              this.$qs.stringify({ orderId:this.orderId, goodsId:this.goodsId })
-            )
-            .then(res => {
-              if (res.data > 0) {
-                this.$message.success("取消成功");
-                this.init();
-              } else {
-                this.$message.error("取消失败");
-              }
-            })
-            .catch(e => {
-              console.log(e);
-            });
+              .post(
+                "/secondhandWeb/orders/cancelOrder",
+                this.$qs.stringify({
+                  orderId: this.orderId,
+                  goodsId: this.goodsId
+                })
+              )
+              .then(res => {
+                if (res.data > 0) {
+                  this.$message.success("取消成功");
+                  this.init();
+                } else {
+                  this.$message.error("取消失败");
+                }
+              })
+              .catch(e => {
+                console.log(e);
+              });
           }
         })
         .catch(e => {
@@ -394,7 +437,7 @@ export default {
             });
         })
         .catch(() => {});
-    },    
+    },
     editAdder(orderId, adderId) {
       this.orderId = orderId;
       // this.adderId = adderId;
@@ -553,12 +596,16 @@ export default {
           console.log(e);
         });
     },
-    confirmOrder(orderId){
-      this.$confirm("确定确认收货吗？确认收货之后交易关闭，将无法进行其他操作", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
+    confirmOrder(orderId) {
+      this.$confirm(
+        "确定确认收货吗？确认收货之后交易关闭，将无法进行其他操作",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
+      )
         .then(() => {
           this.$axios
             .post(
@@ -570,7 +617,7 @@ export default {
                 this.$message.success("确认收货成功");
                 this.init();
               } else {
-                this.$message.error("确认收货失败");                
+                this.$message.error("确认收货失败");
               }
             })
             .catch(e => {
@@ -729,11 +776,11 @@ export default {
   border: none;
   font-size: 16px;
 }
-.orderTitle{
+.orderTitle {
   margin-right: 16%;
 }
-.orderData{
-  position:absolute;
-  margin-top:30px
+.orderData {
+  position: absolute;
+  margin-top: 30px;
 }
 </style>

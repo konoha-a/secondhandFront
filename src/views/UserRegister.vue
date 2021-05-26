@@ -2,7 +2,7 @@
   <div>
     <!-- 头部 -->
     <Head></Head>
-    <!-- <div class="top_bar"></div> -->
+
     <div class="kuang">
       <h2>创建一个新账户</h2>
       <div class="xkuang">
@@ -125,11 +125,10 @@ export default {
       if (this.registerForm.userPhone == "") {
         this.$message.error("手机号不能为空");
         return;
+      } else if (this.registerForm.userPhone.length != 11) {
+        this.$message.error("请输入正确的手机号");
+        return;
       }
-      //   else if(this.registerForm.userPhone!=/^[1][3,4,5,7,8][0-9]{9}$/){
-      //       this.$message.error("请输入正确的手机号");
-      //       return;
-      //   }
       // else if (!/^1[345789]\d{9}$/.test(this.registerForm.userPhone)) {
       //     return callback(new Error('请输入正确的手机号'));
       //     // return callback(new Error('账号不能超过11位'))

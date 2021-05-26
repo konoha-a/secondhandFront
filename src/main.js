@@ -54,7 +54,9 @@ router.beforeEach(function(to, from, next) {
       to.path == "/goodsManage"||
       to.path == "/orderManage"||
       to.path == "/goodsDetail"||
-      to.path == "/goodsClass"
+      to.path == "/goodsClass"||
+      to.path == "/userDetail"||
+      to.path == "/search"
     ) 
   ) {
     if (user == "null" || user == null) {
