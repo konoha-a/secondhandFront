@@ -86,6 +86,11 @@ export default {
           icon: "el-icon-s-order",
           index: "/orderManage",
           title: "订单管理"
+        },
+        {
+          icon: "el-icon-s-comment",
+          index: "/messManage",
+          title: "消息管理"
         }
       ]
     };

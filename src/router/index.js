@@ -16,6 +16,7 @@ import Manager from '../views/Manager.vue'
 import GoodsManage from '../views/ManagePage/GoodsManage.vue'
 import OrderManage from '../views/ManagePage/OrderManage.vue'
 import UserManage from '../views/ManagePage/UserManage.vue'
+import MessManage from '../views/ManagePage/MessManage.vue'
 
 import Message from '../views/Message.vue'
 import MyMess from '../views/MessPage/MyMess.vue'
@@ -116,6 +117,11 @@ const routes = [
         path:'/userManage',
         name:'UserManage',
         component:UserManage,
+      },
+      {
+        path:'/messManage',
+        name:'MessManage',
+        component:MessManage,
       },
     ]
   },

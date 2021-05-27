@@ -19,16 +19,13 @@
         <div class="fansCount">
           <span>粉丝：{{anUserData.fansCount}}</span>
         </div>
-        <!-- <button
-            v-if="!isAttent"
-            class="addAttent"
-            @click="addAttent(sellerId)"
-          >+关注</button>
-          <button
-            v-else
-            class="cancelAttent"
-            @click="cancelAttent(sellerId)"
-          >已关注</button> -->
+        <button v-if="!isAttent" class="addAttent" @click="addAttent(sellerId)">+关注</button>
+        <button
+          v-else
+          class="addAttent"
+          style="background-color: #b1b1b1d8"
+          @click="cancelAttent(sellerId)"
+        >已关注</button>
       </el-row>
       <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
         <el-menu-item index="1">TA的商品</el-menu-item>
@@ -121,8 +118,11 @@ export default {
     return {
       anUserData: {},
       activeIndex: 1,
+      user:this.$getSessionStorage("user"),
+      userId: "",
       anUserId: this.$getSessionStorage("anUserId"),
-      isZero: false,      
+      isZero: false,
+      isAttent: false,
       MyGoodsData: [],
       pageNo: 1,
       pageSize: 16,
@@ -142,18 +142,19 @@ export default {
         )
         .then(res => {
           this.anUserData = res.data;
+          this.total = this.anUserData.publishCount;
         })
         .catch(e => {
           console.log(e);
         });
-        
-        this.$axios
+
+      this.$axios
         .post(
           "/secondhandWeb/goods/getMyGoodsList",
           this.$qs.stringify({
             userId: this.anUserId,
-            pageNo:this.pageNo,
-            pageSize:this.pageSize
+            pageNo: this.pageNo,
+            pageSize: this.pageSize
           })
         )
         .then(res => {
@@ -166,16 +167,80 @@ export default {
           console.log(e);
         });
 
+        if (this.user == null || this.user == "null") {
+            this.isAttent = false;
+          } else {
+            this.userId=this.$getSessionStorage("user").userId;
+            //判断是否关注
+            this.judgAttent();
+          }
+    },
+    judgAttent() {
       this.$axios
         .post(
-          "secondhandWeb/goods/getMyGoodsCount",
-          this.$qs.stringify({ userId: this.anUserId })
+          "/secondhandWeb/attention/isAttent",
+          this.$qs.stringify({
+            userId: this.userId,
+            beAttentId: this.anUserId
+          })
         )
         .then(res => {
-          this.total = res.data;
+          if (res.data > 0) {
+            this.isAttent = true;
+          } else {
+            this.isAttent = false;
+          }
         })
         .catch(e => {
-          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
+    addAttent(sellerId) {
+      if (this.user == null) {
+        this.$message.error("请先登录");
+        this.$router.push("/userLogin");
+      }
+      this.$axios
+        .post(
+          "/secondhandWeb/attention/addAttent",
+          this.$qs.stringify({
+            userId: this.userId,
+            beAttentId: this.anUserId
+          })
+        )
+        .then(res => {
+          //console.log(res);
+          if (res.data > 0) {
+            this.$message.success("关注成功");
+            this.isAttent = true;
+          } else {
+            this.$message.error("关注失败");
+          }
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    },
+    cancelAttent(sellerId) {
+      this.$axios
+        .post(
+          "/secondhandWeb/attention/cancelAttent",
+          this.$qs.stringify({
+            userId: this.userId,
+            beAttentId: this.anUserId
+          })
+        )
+        .then(res => {
+          //console.log(res);
+          if (res.data > 0) {
+            this.$message.success("取消关注成功");
+            this.isAttent = false;
+            // this.$router.push({ path: "/favorites" });
+          } else {
+            this.$message.error("取消关注失败");
+          }
+        })
+        .catch(e => {
           console.log(e);
         });
     },
@@ -313,5 +378,18 @@ export default {
   left: 0;
   margin-top: 30px;
   z-index: 2;
+}
+.addAttent {
+  cursor: pointer;
+  float: right;
+  margin-right: 10px;
+  color: #fff;
+  background-color: #ff7926b0;
+  margin-top: 60px;
+  width: 100px;
+  line-height: 30px;
+  border-radius: 2px;
+  text-align: center;
+  border: none;
 }
 </style>

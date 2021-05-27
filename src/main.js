@@ -53,6 +53,7 @@ router.beforeEach(function(to, from, next) {
       to.path == "/userManage"||
       to.path == "/goodsManage"||
       to.path == "/orderManage"||
+      to.path == "/messManage" ||
       to.path == "/goodsDetail"||
       to.path == "/goodsClass"||
       to.path == "/userDetail"||

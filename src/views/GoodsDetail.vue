@@ -61,7 +61,8 @@
           <button
             v-show="showAttent"
             v-else
-            class="cancelAttent"
+            class="addAttent"
+            style="background-color: #b1b1b1d8"
             @click="cancelAttent(sellerId)"
           >已关注</button>
           <div v-show="!showAttent" style="width:70px"></div>
@@ -208,26 +209,6 @@ export default {
     };
   },
   mounted() {
-    // this.goodsImage = this.$getSessionStorage("goodsDetail").goodsImage;
-    // this.goodsFavo = this.$getSessionStorage("goodsDetail").goodsFavorite;
-    // this.goodsName = this.$getSessionStorage("goodsDetail").goodsName;
-    // this.goodsPrice = this.$getSessionStorage("goodsDetail").goodsPrice;
-    // this.goodsOldNew = this.$getSessionStorage("goodsDetail").goodsOldNew;
-    // this.goodsIntroduct = this.$getSessionStorage("goodsDetail").goodsIntroduct;
-    // this.sellerId = this.$getSessionStorage("goodsDetail").sellerId;
-    // this.sellerName = this.$getSessionStorage("goodsDetail").userName;
-    // this.goodsId = this.$getSessionStorage("goodsDetail").goodsId;
-    // this.sellerSchool = this.$getSessionStorage("goodsDetail").userSchool;
-    // this.attentCount = this.$getSessionStorage("goodsDetail").attentCount;
-    // this.fansCount = this.$getSessionStorage("goodsDetail").fansCount;
-    // this.userImage = this.$getSessionStorage("user").userImage;
-    // this.goodsId=this.$getSessionStorage("goodsId");
-    // this.user=this.$getSessionStorage("user");
-    // this.userId = this.$getSessionStorage("user").userId;
-    // this.goodsFavo = this.goodsDetail.goodsFavorite;
-    // if (this.userId == this.goodsDetail.sellerId) this.showAttent = false;
-    // console.log(this.goodsDetail.sellerId);
-    // if (this.userId == this.goodsDetail.sellerId) this.showAttent = false;
   },
   created() {
     this.init();
@@ -242,7 +223,6 @@ export default {
         )
         .then(res => {
           this.goodsDetail = res.data;
-          console.log(this.goodsDetail);
           this.sellerId = this.goodsDetail.sellerId;
           this.$setSessionStorage("goodsDetail", res.data);
           this.goodsFavo = this.goodsDetail.goodsFavorite;
@@ -362,6 +342,10 @@ export default {
         });
     },
     toMessage(goodsId, sellerId) {
+      if (this.user == null) {
+        this.$message.error("请先登录");
+        this.$router.push("/userLogin");
+      }
       if (this.showAttent == false) {
         this.$message.error("不能与自己私聊！");
         return;
@@ -667,17 +651,6 @@ export default {
   text-align: center;
   border: none;
 }
-.cancelAttent {
-  cursor: pointer;
-  margin-left: 20px;
-  color: #fff;
-  background-color: #b1b1b1d8;
-  width: 60px;
-  line-height: 25px;
-  border-radius: 2px;
-  text-align: center;
-  border: none;
-}
 .sellerSchool {
   margin-top: 30px;
   float: left;
@@ -704,13 +677,13 @@ export default {
   position: absolute;
   float: left;
   margin-left: 10px;
-  margin-top: 206px;
+  margin-top: 225px;
 }
 .fansCount {
   position: absolute;
   float: left;
   margin-left: 10px;
-  margin-top: 260px;
+  margin-top: 275px;
 }
 .messBoardBox {
   border-top: 1px rgb(221, 221, 221) solid;

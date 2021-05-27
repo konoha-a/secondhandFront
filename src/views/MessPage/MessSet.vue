@@ -1,7 +1,7 @@
 <template>
 <div>
     <div class="messSet">
-        <div class="title">系统消息</div>
+        <div class="title">消息设置</div>
         <div class="body">
 
         </div>

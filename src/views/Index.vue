@@ -62,15 +62,24 @@
       <!-- 右侧轮播图 -->
       <div class="lunzhuan">
         <el-carousel height="490px">
-          <el-carousel-item v-for="item in 4" :key="item">
-            <img src="../assets/qq.png" width="100%" height="100%" />
+          <el-carousel-item>
+            <img src="../assets/index1.png" width="100%" height="100%" />
+          </el-carousel-item>
+          <el-carousel-item>
+            <img src="../assets/index2.png" width="100%" height="100%" />
+          </el-carousel-item>
+          <el-carousel-item>
+            <img src="../assets/index3.png" width="100%" height="100%" />
+          </el-carousel-item>
+          <el-carousel-item>
+            <img src="../assets/index4.png" width="100%" height="100%" />
           </el-carousel-item>
         </el-carousel>
       </div>
     </div>
 
     <!-- 菜单 -->
-    <div class="caidan">
+    <!-- <div>
       <el-menu
         :default-active="activeIndex2"
         class="el-menu-caidan"
@@ -80,9 +89,9 @@
         active-text-color="rgb(160, 80, 35)"
       >
         <el-menu-item index="1">猜你喜欢</el-menu-item>
-        <!-- <el-menu-item index="2">更多人看</el-menu-item> -->
       </el-menu>
-    </div>
+    </div> -->
+    <div class="caidan">为您推荐</div>
 
     <!-- 主体 -->
     <div class="indexBody">
@@ -255,13 +264,14 @@ export default {
 }
 .caidan {
   position: absolute;
-  top: 640px;
-  left: 0;
-  right: 0;
+  top: 650px;
+  margin-left: 10%;
+  font-size: 20px;
+  color: #ff7926;
 }
 .indexBody {
   margin-left: 10%;
-  margin-top: 720px;
+  margin-top: 690px;
   width: 80%;
 }
 .cardBox {

@@ -14,22 +14,26 @@
       </div>
     </div>
     <el-table :data="userData" border style="width:100%">
-      <el-table-column prop="userId" label="用户编号" width="148px" align="center"></el-table-column>
-      <el-table-column prop="userName" label="用户名" width="160px" align="center"></el-table-column>
-      <el-table-column prop="userImage" label="用户头像" width="200px" align="center">
+      <el-table-column prop="userId" label="用户编号" width="100px" align="center"></el-table-column>
+      <el-table-column prop="userName" label="用户名" width="120px" align="center"></el-table-column>
+      <el-table-column prop="userImage" label="用户头像" width="110px" align="center">
         <template slot-scope="scope">
-          <el-image style="width:130px" :src="scope.row.userImage"></el-image>
+          <el-image style="width:80px;height:80px" :src="scope.row.userImage"></el-image>
         </template>
       </el-table-column>
-      <el-table-column prop="userSex" label="用户性别" width="150px" align="center">
+      <el-table-column prop="userSex" label="性别" width="80px" align="center">
         <template slot-scope="scope">
           <span v-if="scope.row.userSex==0">男</span>
           <span v-else>女</span>
         </template>
       </el-table-column>
-      <el-table-column prop="userPhone" label="用户电话" width="200px" align="center"></el-table-column>
-      <el-table-column prop="userEmail" label="用户邮箱" width="200px" align="center"></el-table-column>
-      <el-table-column prop="userAdder" label="用户地址" width="250px" align="center"></el-table-column>
+      <el-table-column prop="userPhone" label="用户电话" width="130px" align="center"></el-table-column>
+      <el-table-column prop="userEmail" label="用户邮箱" width="170px" align="center"></el-table-column>
+      <el-table-column prop="userAdder" label="用户地址" width="188px" align="center"></el-table-column>
+      <el-table-column prop="userSchool" label="所在院校" width="170px" align="center"></el-table-column>
+      <el-table-column prop="publishCount" label="商品数" width="80px" align="center"></el-table-column>
+      <el-table-column prop="attentCount" label="关注人数" width="80px" align="center"></el-table-column>
+      <el-table-column prop="fansCount" label="粉丝人数" width="80px" align="center"></el-table-column>
     </el-table>
     <el-pagination
       background
@@ -43,12 +47,12 @@
 </template>
 
 <script>
-import {resetObject} from "@/common.js"
+import { resetObject } from "@/common.js";
 export default {
   name: "UserManage",
   data() {
     return {
-      searchParams:{userName:""},
+      searchParams: { userName: "" },
       // input:[],
       userData: [],
       pageNo: 1, //默认当前页码第1页
@@ -62,47 +66,50 @@ export default {
   methods: {
     initData() {
       this.$axios
-      .post("secondhandWeb/user/getUserList", this.$qs.stringify({pageNo:this.pageNo,pageSize:this.pageSize}))
-      .then(res => {
-        this.userData = res.data;
-      })
-      .catch(e => {
-        this.$message.error("服务器内部发生异常");
-        console.log(e);
-      })
-      
+        .post(
+          "secondhandWeb/user/getUserList",
+          this.$qs.stringify({ pageNo: this.pageNo, pageSize: this.pageSize })
+        )
+        .then(res => {
+          this.userData = res.data;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+
       this.$axios
-      .get("secondhandWeb/user/getUserCount", this.$qs.stringify())
-      .then(res => {
-        this.total = res.data;
-      })
-      .catch(e => {
-        this.$message.error("服务器内部发生异常");
-        console.log(e);
-      })
+        .get("secondhandWeb/user/getUserCount", this.$qs.stringify())
+        .then(res => {
+          this.total = res.data;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
     },
-    search(){
+    search() {
       this.$axios
-      .post("secondhandWeb/user/findUserByName", this.$qs.stringify({userName:this.searchParams.userName}))
-      .then(res => {
-        this.userData = res.data;
-      })
-      .catch(e => {
-        this.$message.error("服务器内部发生异常");
-        console.log(e);
-      });
+        .post(
+          "secondhandWeb/user/findUserByName",
+          this.$qs.stringify({ userName: this.searchParams.userName })
+        )
+        .then(res => {
+          this.userData = res.data;
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
     },
-    reSet(){
+    reSet() {
       resetObject(this.searchParams);
-      this.refresh();
-    },
-    refresh(){
       this.initData();
     },
-    changePage(val){
-      this.pageNo=val;//改变当前页码
-      this.initData();//根据新的页码选取分页数据
-    },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.initData(); //根据新的页码选取分页数据
+    }
   }
 };
 </script>

@@ -95,6 +95,26 @@ export default {
           if (res.data > 0) {
             this.isMess = true;
           } else {
+            this.isExistSymess();
+          }
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
+    isExistSymess(){
+      this.$axios
+        .post(
+          "/secondhandWeb/symess/isExistSymess",
+          this.$qs.stringify({
+            userId: this.userId
+          })
+        )
+        .then(res => {
+          if (res.data > 0) {
+            this.isMess = true;
+          } else {
             this.isMess = false;
           }
         })
@@ -162,13 +182,6 @@ export default {
   float: right;
   cursor: pointer;
 }
-/* .haveLogin {
-  margin-top: 7px;
-  margin-left: 12px;
-  position: relative;
-  float: right;
-  cursor: pointer;
-} */
 .message {
   cursor: pointer;
   margin-top: 5px;

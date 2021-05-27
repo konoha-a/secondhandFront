@@ -21,7 +21,7 @@
           </div>
         </div>
 
-        <div class="right" v-if="!isZero">
+        <div class="right" v-if="!isZero" v-show="isClick">
           <!-- 商品信息 -->
           <div class="goodsInfo">
             <el-image
@@ -40,7 +40,7 @@
             <div v-for="(item,deIndex) in messDetail" :key="deIndex">
               <span class="sendT">{{item.sendT}}</span>
               <div v-show="!item.isSender" style="height: 45px;">
-                <el-image class="ortherImage" :src="ortherInfo.userImage"></el-image>
+                <img class="ortherImage" :src="ortherImage">
                 <span class="ortherCont">{{item.meContent}}</span>
               </div>
               <div v-show="item.isSender" style="height: 45px;">
@@ -53,7 +53,6 @@
           <!-- 输入框 -->
           <div class="messText">
             <textarea class="textarea" rows="7" cols="20" v-model="messText"></textarea>
-            <!-- <el-input type="textarea" clear="textarea" rows="6" v-model="messText"></el-input> -->
             <button
               class="addMessCont"
               @click="addMessCont(messGoods.goodsId,userId,ortherId,messText)"
@@ -75,15 +74,15 @@ export default {
       messPage: [],
       messDetail: [],
       isZero: false,
+      isClick:false,
       messGoods: {},
       ortherInfo: {},
       totalPrice: 0,
-      // isClick: false,
       messText: "",
       userId: this.$getSessionStorage("user").userId,
       userImage: this.$getSessionStorage("user").userImage,
+      ortherImage:"https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
       iSender: false,
-      ortherId: "",
       showAttent: true,
       upMessDetail: null,
       upMessList:null,
@@ -123,8 +122,8 @@ export default {
           else {
             this.isZero = false;
             this.messPage = res.data;
-            this.getMessDetail();
-            this.getDetailById(this.$getSessionStorage("goodsId"));
+            // this.getMessDetail();
+            // this.getDetailById(this.$getSessionStorage("goodsId"));
           }
         })
         .catch(e => {
@@ -132,9 +131,9 @@ export default {
         });
     },
     messRight(goodsId, ortherId) {
+      this.isClick=true;
       this.$setSessionStorage("goodsId", goodsId);
       this.$setSessionStorage("ortherId", ortherId);
-      // this.isClick = true;
       //获取右边的商品详情
       this.getDetailById(goodsId);
       //标记已读
@@ -142,7 +141,7 @@ export default {
       //获取详细聊天记录
       this.getMessDetail();
       //获取对方用户信息
-      this.getUserInfo(ortherId);
+      this.getOrtherInfo(ortherId);
     },
     getDetailById(goodsId) {
       this.$axios
@@ -153,7 +152,8 @@ export default {
         .then(res => {
           this.messGoods = res.data;
           this.totalPrice = this.messGoods.goodsPrice + this.messGoods.goodsCar;
-          this.$setSessionStorage("goodsDetail", res.data);
+          this.$setSessionStorage("goodsId",goodsId);
+          // this.$setSessionStorage("goodsDetail", res.data);
           if (res.data.sellerId == this.userId) this.showAttent = false;
           else this.showAttent = true;
         })
@@ -171,6 +171,8 @@ export default {
         .then(res => {
           if (res.data > 0) {
             this.init();
+            this.getMessDetail();
+            this.getDetailById(goodsId);
           }
         })
         .catch(e => {
@@ -196,7 +198,7 @@ export default {
           console.log(e);
         });
     },
-    getUserInfo(ortherId) {
+    getOrtherInfo(ortherId) {
       this.$axios
         .post(
           "secondhandWeb/user/getUserInfo",
@@ -204,6 +206,7 @@ export default {
         )
         .then(res => {
           this.ortherInfo = res.data;
+          this.ortherImage=this.ortherInfo.userImage;
           this.ortherId = res.data.userId;
         })
         .catch(e => {
@@ -254,7 +257,7 @@ export default {
           .then(res => {
             if (res.data > 0) {
               this.messText = "";
-              this.messRight(this.$getSessionStorage("goodsId"), this.ortherId);
+              this.messRight(this.$getSessionStorage("goodsId"), ortherId);
             }
           })
           .catch(e => {

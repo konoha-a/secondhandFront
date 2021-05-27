@@ -10,28 +10,38 @@
           style="width:180px"
         ></el-input>
         <el-button type="success" size="small" @click="search" class="search">查询</el-button>
-        <el-button type="warning" size="small" @click="reSearch" class="reSet">重置</el-button>
+        <el-button type="warning" size="small" @click="reSet" class="reSet">重置</el-button>
       </div>
     </div>
     <el-table :data="goodsData" border style="width:100%">
-      <el-table-column prop="goodsId" label="商品编号" width="80px" align="center"></el-table-column>
-      <el-table-column prop="goodsName" label="商品名称" width="140px" align="center"></el-table-column>
-      <el-table-column prop="goodsImage" label="商品图片" width="140px" align="center">
+      <el-table-column prop="goodsId" label="商品编号" width="100px" align="center"></el-table-column>
+      <el-table-column prop="goodsName" label="商品名称" width="120px" align="center"></el-table-column>
+      <el-table-column prop="goodsImage" label="商品图片" width="110px" align="center">
         <template slot-scope="scope">
-          <el-image style="width:130px" :src="scope.row.goodsImage"></el-image>
+          <el-image style="width:80px;height:80px" :src="scope.row.goodsImage"></el-image>
         </template>
       </el-table-column>
       <el-table-column prop="sellerId" label="卖家编号" width="100px" align="center"></el-table-column>
       <el-table-column prop="goodsOldNew" label="商品成色" width="80px" align="center"></el-table-column>
       <el-table-column prop="goodsIntroduct" label="商品介绍" width="230px" align="center"></el-table-column>
-      <el-table-column prop="goodsPrice" label="价格" width="100px" align="center"></el-table-column>
-      <el-table-column prop="goodsClass" label="类别" width="100px" align="center"></el-table-column>
-      <el-table-column prop="goodsNum" label="商品数量" width="80px" align="center"></el-table-column>
-      <el-table-column prop="goodsFavorite" label="商品收藏量" width="100px" align="center"></el-table-column>
-      <el-table-column fixed="right" label="操作" width="145">
+      <el-table-column prop="goodsPrice" label="价格" width="80px" align="center"></el-table-column>
+      <el-table-column prop="goodsCar" label="运费" width="80px" align="center"></el-table-column>
+      <el-table-column prop="goodsClass" label="类别" width="98px" align="center"></el-table-column>
+      <el-table-column prop="goodsFavorite" label="收藏人数" width="80px" align="center"></el-table-column>
+      <el-table-column prop="isSell" label="是否卖出" width="80px" align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.isSell==0">否</span>
+          <span v-else>是</span>
+        </template>
+      </el-table-column>
+      <el-table-column fixed="right" label="操作" width="150px">
         <div slot-scope="scope">
           <el-button type="primary" size="small" @click="editItem" disabled>编辑</el-button>
-          <el-button type="danger" size="small" @click="removeItem(scope.row.goodsId)">删除</el-button>
+          <el-button
+            type="danger"
+            size="small"
+            @click="removeItem(scope.row.goodsId,scope.row.sellerId,scope.row.goodsName)"
+          >删除</el-button>
         </div>
       </el-table-column>
     </el-table>
@@ -54,6 +64,7 @@ export default {
     return {
       searchParams: { goodsName: "" },
       goodsData: [],
+      managerId: this.$getSessionStorage("manager").managerId,
       pageNo: 1, //默认当前页码第1页
       pageSize: 10, //每页显示10条
       total: 0 //总条数
@@ -66,8 +77,8 @@ export default {
     initData() {
       this.$axios
         .post(
-          "secondhandWeb/goods/getGoodsList",
-          this.$qs.stringify({ pageNo: this.pageNo, pageSize:this.pageSize })
+          "secondhandWeb/goods/getGoodsListMa",
+          this.$qs.stringify({ pageNo: this.pageNo, pageSize: this.pageSize })
         )
         .then(res => {
           this.goodsData = res.data;
@@ -87,6 +98,10 @@ export default {
           console.log(e);
         });
     },
+    changePage(val) {
+      this.pageNo = val; //改变当前页码
+      this.initData(); //根据新的页码选取分页数据
+    },
     search() {
       this.$axios
         .post(
@@ -101,34 +116,29 @@ export default {
           console.log(e);
         });
     },
-    reSearch() {
-      // resetObject(this.searchParams);
-      this.refresh();
-    },
-    refresh() {
+    reSet() {
+      resetObject(this.searchParams);
       this.initData();
     },
-    changePage(val) {
-      this.pageNo = val; //改变当前页码
-      this.initData(); //根据新的页码选取分页数据
-    },
-    removeItem(goodsId) {
-      this.$confirm("确定删除?", "提示", {
+    removeItem(goodsId, sellerId,goodsName) {
+      this.$confirm("确定删除并向该用户发出商品违规信息吗?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          console.log(goodsId);
           this.$axios
-            .post("secondhandWeb/goods/deleteTGoods",this.$qs.stringify({ goodsId }))
+            .post(
+              "secondhandWeb/goods/deleteTGoods",
+              this.$qs.stringify({ goodsId })
+            )
             .then(res => {
-              // this.goodsData = res.data;
-              if (res == 1) {
-                this.$message.error("删除失败");
-              }else{
+              if (res.data == 1) {
                 this.$message.success("删除成功");
-                this.refresh();
+                this.initData();
+                this.addGoodsSymess(goodsId,sellerId,goodsName);
+              } else {
+                this.$message.error("删除失败");
               }
             })
             .catch(e => {
@@ -136,8 +146,27 @@ export default {
               console.log(e);
             });
         })
-        .catch(()=>{});
-        
+        .catch(() => {});
+    },
+    addGoodsSymess(goodsId, sellerId,goodsName) {
+      this.$axios
+        .post(
+          "secondhandWeb/symess/addGoodsSymess",
+          this.$qs.stringify({
+            managerId: this.managerId,
+            userId: sellerId,
+            goodsId: goodsId,
+            goodsName: goodsName
+          })
+        )
+        .then(res => {
+          if(res.data>0) this.$message.success("系统消息发布成功");
+          else this.$message.error("系统消息发布失败");
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
     }
   }
 };
