@@ -55,7 +55,8 @@ export default {
   data() {
     return {
       isLogin: false,
-      userId: this.$getSessionStorage("user").userId,
+      user:this.$getSessionStorage("user"),
+      userId: "",
       isMess: false,
       upRead:"",
     };
@@ -78,8 +79,9 @@ export default {
   },
   methods: {
     init() {
-      if (this.userId == null || this.userId == "null") return;
+      if (this.user == null || this.user == "null") return;
       else {
+        this.userId=this.user.userId;
         this.isExistRead();
       }
     },

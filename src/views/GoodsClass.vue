@@ -3,9 +3,9 @@
     <Head></Head>
     <div class="top_bar">
       <div class="logo">{{this.classTitle}}</div>
-      <el-input class="faSearch" v-model="searchText">
+      <!-- <el-input class="faSearch" v-model="searchText">
         <el-button slot="append" @click="searchSubmit(searchText)">搜索</el-button>
-      </el-input>
+      </el-input> -->
     </div>
     <div class="indexBody">
       <el-row :gutter="60">

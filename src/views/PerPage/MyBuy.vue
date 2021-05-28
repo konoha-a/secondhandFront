@@ -114,12 +114,12 @@
 
     <!-- 订单详情 -->
     <el-dialog :visible.sync="showBuyDetail" width="500px">
-      <el-steps :active="active" finish-status="success">
+      <!-- <el-steps :active="active" finish-status="success">
         <el-step title="拍下商品"></el-step>
         <el-step title="支付成功"></el-step>
         <el-step title="卖家发货"></el-step>
         <el-step title="确认收货"></el-step>
-      </el-steps>
+      </el-steps> -->
       <el-image
         class="goodsImage"
         @click="toGoodsDetail(buyData.goodsId)"
@@ -344,6 +344,7 @@ export default {
         .then(res => {
           if (res.data > 0) {
             this.$message.success("支付成功");
+            this.init();
             this.showPay = false;
           } else {
             // this.$message.error("");

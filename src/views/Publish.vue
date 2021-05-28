@@ -158,7 +158,7 @@ export default {
         )
         .then(res => {
           if (res.data > 0) {
-            // this.$message.success("发布成功");
+            this.$setSessionStorage("goodsId",res.data);
             alert("发布成功，点击确认跳转页面");
             this.$axios
               .post(
@@ -166,7 +166,6 @@ export default {
                 this.$qs.stringify({ goodsId: res.data })
               )
               .then(res => {
-                this.$setSessionStorage("goodsDetail", res.data);
                 this.$router.push("/goodsDetail");
               })
               .catch(e => {

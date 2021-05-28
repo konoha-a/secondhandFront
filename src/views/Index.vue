@@ -24,8 +24,8 @@
       <!-- 左侧菜单 -->
       <div class="leftMenuBox">
         <el-col>
-          <el-menu class="leftMenu" @open="handleOpen" @close="handleClose" @select="toGoodsClass">
-            <el-menu-item index="1" @click="goodsClass">
+          <el-menu class="leftMenu" @select="toGoodsClass">
+            <el-menu-item index="1">
               <i class="el-icon-notebook-1"></i>
               <span slot="title">书籍</span>
               <i class="el-icon-arrow-right"></i>
@@ -63,34 +63,21 @@
       <div class="lunzhuan">
         <el-carousel height="490px">
           <el-carousel-item>
-            <img src="../assets/index1.png" width="100%" height="100%" />
+            <img src="../assets/index2.png" width="100%" height="100%" />
           </el-carousel-item>
           <el-carousel-item>
-            <img src="../assets/index2.png" width="100%" height="100%" />
+            <img src="../assets/index4.png" width="100%" height="100%" />
           </el-carousel-item>
           <el-carousel-item>
             <img src="../assets/index3.png" width="100%" height="100%" />
           </el-carousel-item>
           <el-carousel-item>
-            <img src="../assets/index4.png" width="100%" height="100%" />
+            <img src="../assets/index1.png" width="100%" height="100%" />
           </el-carousel-item>
         </el-carousel>
       </div>
     </div>
 
-    <!-- 菜单 -->
-    <!-- <div>
-      <el-menu
-        :default-active="activeIndex2"
-        class="el-menu-caidan"
-        mode="horizontal"
-        background-color="#FFAC7A"
-        text-color="#fff"
-        active-text-color="rgb(160, 80, 35)"
-      >
-        <el-menu-item index="1">猜你喜欢</el-menu-item>
-      </el-menu>
-    </div> -->
     <div class="caidan">为您推荐</div>
 
     <!-- 主体 -->
@@ -141,7 +128,7 @@ export default {
       activeIndex2: "1",
       modelSelect: "1",
       pageNo: 1,
-      pageSize: 20,
+      pageSize: 16,
       total: 0,
       goodsList: [],
       goodsId: ""

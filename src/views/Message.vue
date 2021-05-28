@@ -23,7 +23,7 @@
               <el-badge v-show="isSyMess" is-dot>● 系统消息</el-badge>
               <el-badge v-show="!isSyMess">● 系统消息</el-badge>
             </el-menu-item>
-            <el-menu-item @click="toMessSet">● 消息设置</el-menu-item>
+            <!-- <el-menu-item @click="toMessSet">● 消息设置</el-menu-item> -->
           </el-menu>
         </div>
       </div>

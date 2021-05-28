@@ -62,12 +62,12 @@
 
     <!-- 订单详情 -->
     <el-dialog :visible.sync="showSellDetail" width="500px">
-      <el-steps :active="active" finish-status="success">
+      <!-- <el-steps :active="active" finish-status="success">
         <el-step title="拍下商品"></el-step>
         <el-step title="支付成功"></el-step>
         <el-step title="卖家发货"></el-step>
         <el-step title="确认收货"></el-step>
-      </el-steps>
+      </el-steps> -->
       <el-image class="goodsImage" @click="toGoodsDetail(sellData.goodsId)" :src="sellData.goodsImage"></el-image>
       <span class="goodsName">{{sellData.goodsName}}</span>
       <span style="float: right;margin-right: 10px;margin-top:25px">￥ {{sellData.orderPrice}}</span>
@@ -297,7 +297,123 @@ export default {
     },
     delCancel(){
       this.showDeliver=false;
-    }
+    },
+    toMessage(goodsId,buyerId){
+      this.$axios
+        .post(
+          "/secondhandWeb/message/isMessList",
+          this.$qs.stringify({
+            goodsId: goodsId,
+            userId: this.userId,
+            ortherId: buyerId
+          })
+        )
+        .then(res => {
+          if (res.data == 0) {
+            this.$axios
+              .post(
+                "/secondhandWeb/message/addMessList",
+                this.$qs.stringify({
+                  goodsId: goodsId,
+                  userId: this.userId,
+                  ortherId: buyerId
+                })
+              )
+              .then(res => {
+                if (res.data > 0) {
+                  this.$setSessionStorage("goodsId", goodsId);
+                  this.$setSessionStorage("ortherId", buyerId);
+                  this.$router.push("/message");
+                }
+              })
+              .catch(e => {
+                this.$message.error("服务器内部发生异常");
+                console.log(e);
+              });
+          } else if (res.data == 1) {
+            this.$axios
+              .post(
+                "secondhandWeb/message/showMess",
+                this.$qs.stringify({
+                  goodsId,
+                  userId: this.userId,
+                  ortherId: buyerId
+                })
+              )
+              .then(res => {
+                if (res.data > 0) {
+                  this.$setSessionStorage("goodsId", goodsId);
+                  this.$setSessionStorage("ortherId", buyerId);
+                  this.$router.push("/message");
+                }
+              })
+              .catch(e => {
+                this.$message.error("服务器内部发生异常");
+                console.log(e);
+              });
+          } else {
+            this.$setSessionStorage("goodsId", goodsId);
+            this.$setSessionStorage("ortherId", buyerId);
+            this.$router.push("/message");
+          }
+        })
+        .catch(e => {
+          this.$message.error("服务器内部发生异常");
+          console.log(e);
+        });
+    },
+    cancelOrder(orderId, goodsId) {
+      this.$confirm("确定取消订单吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$axios
+            .post(
+              "/secondhandWeb/orders/cancelOrder",
+              this.$qs.stringify({ orderId, goodsId })
+            )
+            .then(res => {
+              if (res.data > 0) {
+                this.$message.success("取消成功");
+                this.init();
+              } else {
+                this.$message.error("取消失败");
+              }
+            })
+            .catch(e => {
+              console.log(e);
+            });
+        })
+        .catch(() => {});
+    },
+    deleteOrder(orderId) {
+      this.$confirm("确定删除订单吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$axios
+            .post(
+              "/secondhandWeb/orders/deleteOrder",
+              this.$qs.stringify({ orderId })
+            )
+            .then(res => {
+              if (res > 0) {
+                this.$message.error("删除失败");
+              } else {
+                this.$message.success("删除成功");
+                this.init();
+              }
+            })
+            .catch(e => {
+              console.log(e);
+            });
+        })
+        .catch(() => {});
+    },
   },
   components: {}
 };

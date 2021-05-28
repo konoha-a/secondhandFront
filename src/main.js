@@ -27,7 +27,8 @@ Vue.filter("toDecimal", function(value) {
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 
-axios.defaults.baseURL = "http://localhost:8082/"; //将axios挂载到vue上，使用是就可以 this.$axios 这样使用了
+// axios.defaults.baseURL = "http://81.70.252.138:8082/"; //将axios挂载到vue上，使用是就可以 this.$axios 这样使用了
+axios.defaults.baseURL = "http://localhost:8082/";
 Vue.prototype.$axios = axios;
 Vue.prototype.$qs = qs;
 Vue.prototype.$getCurDate = getCurDate;

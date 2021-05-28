@@ -40,7 +40,7 @@
             <div v-for="(item,deIndex) in messDetail" :key="deIndex">
               <span class="sendT">{{item.sendT}}</span>
               <div v-show="!item.isSender" style="height: 45px;">
-                <img class="ortherImage" :src="ortherImage">
+                <img class="ortherImage" :src="ortherInfo.userImage">
                 <span class="ortherCont">{{item.meContent}}</span>
               </div>
               <div v-show="item.isSender" style="height: 45px;">
@@ -79,9 +79,9 @@ export default {
       ortherInfo: {},
       totalPrice: 0,
       messText: "",
+      ortherId:"",
       userId: this.$getSessionStorage("user").userId,
       userImage: this.$getSessionStorage("user").userImage,
-      ortherImage:"https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
       iSender: false,
       showAttent: true,
       upMessDetail: null,
@@ -171,8 +171,8 @@ export default {
         .then(res => {
           if (res.data > 0) {
             this.init();
-            this.getMessDetail();
-            this.getDetailById(goodsId);
+            // this.getMessDetail();
+            // this.getDetailById(goodsId);
           }
         })
         .catch(e => {
@@ -199,14 +199,14 @@ export default {
         });
     },
     getOrtherInfo(ortherId) {
+      console.log(ortherId)
       this.$axios
         .post(
           "secondhandWeb/user/getUserInfo",
-          this.$qs.stringify({ ortherId })
+          this.$qs.stringify({userId:ortherId })
         )
         .then(res => {
           this.ortherInfo = res.data;
-          this.ortherImage=this.ortherInfo.userImage;
           this.ortherId = res.data.userId;
         })
         .catch(e => {
@@ -257,7 +257,7 @@ export default {
           .then(res => {
             if (res.data > 0) {
               this.messText = "";
-              this.messRight(this.$getSessionStorage("goodsId"), ortherId);
+              this.getMessDetail();
             }
           })
           .catch(e => {
